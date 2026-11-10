@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#185c37"><title>Room Work — Excel Sheet</title>
+<style>
+:root{--green:#217346;--green-dark:#185c37;--green-pale:#e2f0d9;--line:#d6dce2;--head:#f3f6f8;--ink:#202833;--muted:#64748b;--blue:#d9eaf7;--white:#fff}
+*{box-sizing:border-box}body{margin:0;background:#f4f6f8;color:var(--ink);font:14px/1.4 "Aptos",Calibri,Arial,sans-serif}
+.top{height:54px;background:var(--green-dark);color:white;display:flex;align-items:center;justify-content:space-between;padding:0 17px}
+.brand{font-weight:800;font-size:18px}.cloud{font-size:12px;color:#d7eadf}
+.tabs{display:flex;background:#e9edf0;border-bottom:1px solid #cbd2d8;padding:7px 12px 0;gap:5px}
+.tab{padding:10px 20px;border-radius:7px 7px 0 0;background:#dce2e6;color:#41505d;font-weight:700}
+.tab.active{background:white;color:var(--green-dark);border:1px solid #cbd2d8;border-bottom:1px solid white;margin-bottom:-1px}
+.page{display:none}.page.active{display:block}
+.ribbon{background:white;border-bottom:1px solid var(--line);padding:10px 14px;display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.group{display:flex;align-items:center;gap:7px;padding-right:12px;border-right:1px solid var(--line)}.group:last-child{border:0}
+button,input{font:inherit}button{border:1px solid #c8d0d8;background:#fff;border-radius:5px;padding:7px 11px;cursor:pointer;color:#263342;font-weight:650}
+button:hover{background:#f2f7f4}button.green{background:var(--green);border-color:var(--green);color:white}
+button:disabled{opacity:.45;cursor:not-allowed}
+input{border:1px solid #bfc9d2;border-radius:4px;padding:7px 9px;min-width:0}
+input:focus{outline:2px solid #8bb8d5;outline-offset:0}
+input[type=date]{width:150px}
+.status{font-size:12px;font-weight:700}.good{color:#168044}.pending{color:#a15c00}.muted{color:var(--muted)}
+.sheet-area{padding:12px;overflow:auto}
+.sheet-title{font-size:13px;color:#52616d;margin:0 0 8px}
+.sheet-frame{background:white;border:1px solid #c9d1d8;overflow:auto;max-height:calc(100vh - 210px);min-height:300px}
+table{border-collapse:separate;border-spacing:0;min-width:780px;width:100%}
+th,td{border-right:1px solid #d9dee3;border-bottom:1px solid #d9dee3;height:40px;padding:6px 10px}
+thead th{position:sticky;top:0;background:#eaf0f4;z-index:3;text-align:center;font-weight:700;color:#40515f}
+thead th:first-child{left:0;z-index:5}
+.rownum{position:sticky;left:0;background:#f0f3f5!important;text-align:center;width:42px;min-width:42px;color:#65717d;font-size:12px;z-index:2;padding:4px}
+.task{position:sticky;left:42px;background:#fbfcfd;z-index:1;min-width:250px;font-weight:650}
+thead .task{z-index:4;background:#eaf0f4}
+td.person{text-align:center;min-width:130px}
+tbody tr:hover td{background:#f5faf7}tbody tr:hover .rownum,tbody tr:hover .task{background:#edf5f0!important}
+.sheet-cell{width:100%;min-width:100px;min-height:32px;border:0;border-radius:0;background:transparent;padding:7px 8px;text-align:left;outline:none}
+.date-cell{display:inline-flex;align-items:center;justify-content:center;width:calc(100% - 12px);min-width:96px;min-height:34px;margin:2px 6px;border:1px solid #b8c3cc;border-radius:4px;background:#fff;color:#334155;font-weight:700;font-size:14px;cursor:pointer}.date-cell.is-marked{background:var(--green);border-color:var(--green);color:#fff}.date-cell:focus-visible{outline:3px solid #6aa6d2;outline-offset:2px}.date-cell:disabled{opacity:.55;cursor:not-allowed}
+.date-banner{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 14px;background:#e2f0d9;border-bottom:1px solid #b8d6b2;color:#185c37;font-weight:750}
+.date-banner strong{font-size:16px}.export-btn{background:#f4f8fc;border-color:#9eb8ce}
+
+.sheet-foot{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:8px 12px;background:#f7f9fa;border-top:1px solid var(--line);font-size:12px;color:#586775}
+.settings-wrap{max-width:650px;margin:24px auto;padding:0 14px 40px}
+.settings-card{background:white;border:1px solid var(--line);border-radius:9px;padding:20px;box-shadow:0 4px 15px #1020300a}
+h2{margin:0 0 6px;font-size:19px}.desc{margin:0 0 18px;color:var(--muted);font-size:13px}
+.field{display:flex;flex-direction:column;gap:6px;margin:13px 0}.field label{font-size:12px;font-weight:750;color:#485766}.field input{width:100%;padding:10px}
+.note{background:#fff8e8;border:1px solid #eed9a9;padding:11px;border-radius:6px;font-size:12px;color:#755016;line-height:1.5;margin-top:14px}
+.locked{max-width:420px;margin:34px auto;text-align:left}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.hidden{display:none!important}
+.overlay{position:fixed;inset:0;background:#102030a8;display:none;align-items:center;justify-content:center;padding:16px;z-index:10}
+.dialog{background:white;padding:22px;border-radius:10px;width:min(410px,100%)}.dialog h3{margin:0 0 8px}.dialog p{color:var(--muted);font-size:13px}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#183c2a;color:white;padding:10px 14px;border-radius:6px;display:none;z-index:20;max-width:90%}
+@media(max-width:600px){
+ .top{height:48px;padding:0 12px}.brand{font-size:16px}.tabs{padding-left:8px}.tab{padding:9px 18px}
+ .ribbon{padding:8px;gap:7px}.group{padding-right:7px}.group button{padding:7px 8px}
+ .sheet-area{padding:8px 0}.sheet-title{padding:0 9px}.sheet-frame{max-height:calc(100vh - 205px);border-left:0;border-right:0}
+ table{min-width:700px}.settings-wrap{margin:16px auto}
+}
+
+@media(max-width:700px){
+ .ribbon{align-items:stretch}.group{flex-wrap:wrap;border-right:0;border-bottom:1px solid var(--line);padding:4px 0 8px;width:100%}
+ .group button,.group input{min-height:44px;font-size:15px}.group input[type=date]{flex:1;width:auto;min-width:145px}
+ .date-banner{padding:12px 10px;position:sticky;top:0;z-index:6}.date-banner strong{font-size:17px}
+ .sheet-area{padding:8px 0}.sheet-frame{max-height:calc(100dvh - 310px);min-height:260px;overflow:auto;overscroll-behavior:contain}
+ table{min-width:720px}.rownum{width:38px;min-width:38px}.task{left:38px;min-width:190px}
+ th,td{height:54px;padding:5px 7px}td.person{min-width:125px}.date-cell{min-height:46px;font-size:16px;min-width:112px;width:calc(100% - 8px);margin:2px 4px}
+ .sheet-foot{padding:10px;position:sticky;bottom:0}.tabs{position:sticky;top:0;z-index:8}
+}
+@media(max-width:700px) and (orientation:portrait){.sheet-frame{max-height:calc(100dvh - 340px)}.sheet-area:before{content:"Tip: swipe left/right to see all people, or rotate your phone to landscape.";display:block;padding:0 10px 8px;color:#64748b;font-size:12px}}
+@media(max-width:700px) and (orientation:landscape){.sheet-frame{max-height:calc(100dvh - 225px);min-height:180px}.ribbon{padding:5px 8px}.group{width:auto;border:0;padding:2px 5px}.group button,.group input{min-height:38px}}
+
+</style></head>
+<body>
+<header class="top"><div class="brand">▦ Room Work</div><div class="cloud" id="cloudStatus">● Local mode</div></header>
+<nav class="tabs">
+ <button class="tab active" data-page="excel">Excel</button>
+ <button class="tab" data-page="settings">Settings</button>
+</nav>
+
+<section id="page-excel" class="page active">
+ <div class="ribbon">
+  <div class="group"><strong>Date</strong><input type="date" id="workDate"><button id="today">Today</button><button id="tomorrow">Tomorrow</button></div>
+  <div class="group"><button class="green" id="confirmDate">Confirm date</button><span class="status pending" id="dateStatus">Not confirmed</span></div>
+  <div class="group"><button class="export-btn" id="exportExcel">Export Excel</button><button class="export-btn" id="exportPdf">Export PDF</button></div>
+ </div>
+ <div class="date-banner"><span>CONFIRMED DATE:</span><strong id="confirmedDateLabel">Not confirmed</strong></div>
+ <div class="sheet-area">
+  <p class="sheet-title" id="sheetTitle">ROOM WORK — DAILY ALLOCATION</p>
+  <div class="sheet-frame">
+   <table aria-label="Excel style household work sheet">
+    <thead><tr><th class="rownum"></th><th class="task">WORK / TASK</th><th>DHRSHYA</th><th>SANDRA</th><th>SHAKINA</th><th>VIJAYSHREE</th></tr></thead>
+    <tbody id="sheetBody"></tbody>
+   </table>
+  </div>
+  <div class="sheet-foot"><span id="countText">Tap a cell to mark it with the confirmed date</span><span id="syncText">Changes saved on this device</span></div>
+ </div>
+</section>
+
+<section id="page-settings" class="page">
+ <div class="settings-wrap">
+  <div class="settings-card locked" id="lockedPanel">
+   <h2>Settings locked</h2><p class="desc">Only the owner should open this section to edit the Supabase connection.</p>
+   <div class="field"><label for="ownerPin">Owner lock PIN</label><input id="ownerPin" type="password" placeholder="Enter owner PIN" autocomplete="current-password"></div>
+   <div class="actions"><button class="green" id="unlock">Unlock settings</button><button id="createPin">Create owner PIN</button></div>
+   <p class="desc" style="margin-top:14px">The owner PIN is verified by the Netlify server. Settings are shared across all devices.</p>
+  </div>
+  <div class="settings-card hidden" id="settingsPanel">
+   <h2>Supabase connection</h2><p class="desc">Enter your project details here. No need to edit the HTML source code.</p>
+   <div class="field"><label for="projectName">Project name</label><input id="projectName" type="text" placeholder="Room Work"></div>
+   <div class="field"><label for="projectUrl">Supabase Project URL</label><input id="projectUrl" type="url" placeholder="https://your-project.supabase.co"></div>
+   <div class="field"><label for="apiKey">Supabase anon / publishable API key</label><input id="apiKey" type="password" placeholder="Paste public anon or publishable key" autocomplete="off"></div>
+   <div class="actions"><button class="green" id="saveConnect">Save & connect</button><button id="testConnect">Test connection</button><button id="toggleKey">Show key</button><button id="lock">Lock settings</button></div>
+   <p class="desc" id="settingsStatus" style="margin-top:14px">No project configured.</p>
+   <div class="note"><b>Key safety:</b> Enter only the Supabase anon/public or publishable key. Never enter the service_role or secret key. This is a no-login public app, so database access must be controlled with Supabase policies. The PIN is a simple UI lock, not strong authentication against a technically capable visitor.</div>
+  </div>
+ </div>
+</section>
+
+<div class="overlay" id="confirmOverlay"><div class="dialog"><h3>Confirm this work date?</h3><p id="confirmMessage"></p><div class="actions"><button class="green" id="yesDate">Confirm</button><button id="noDate">Cancel</button></div></div></div>
+<div class="overlay" id="pinOverlay"><div class="dialog"><h3>Create owner PIN</h3><p>Create the one-time owner PIN for this website. It will work across all devices.</p><div class="field"><label for="pin1">New owner PIN (8+ characters)</label><input type="password" id="pin1"></div><div class="field"><label for="pin2">Confirm PIN</label><input type="password" id="pin2"></div><div class="actions"><button class="green" id="savePin">Save PIN</button><button id="cancelPin">Cancel</button></div></div></div>
+<div class="toast" id="toast"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.4/dist/jspdf.plugin.autotable.min.js"></script>
+<script>
+const PEOPLE=["DHRSHYA","SANDRA","SHAKINA","VIJAYSHREE"];
+const TASKS=["FLOOR & TOP","MOP","MAT WASHING","WASTE","CAN WATER & WASH","KITCHEN VESSEL KEEPING","BATHROOM","TOMATO & ONION MARKET"];
+const $=id=>document.getElementById(id), iso=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+let date=iso(new Date()), confirmed=JSON.parse(localStorage.getItem("rw_dates")||"{}"), data=JSON.parse(localStorage.getItem("rw_text_cells")||"{}"), db=null, channel=null, settingsUnlocked=false, pendingDate=null, globalCfg={}, ownerPinSession="", ownerConfigured=false;
+const cellKey=(d,t,p)=>`${d}|${t}|${p}`, cfg=()=>globalCfg;
+async function settingsApi(body){let r=await fetch("/api/settings",{method:body?"POST":"GET",headers:body?{"Content-Type":"application/json"}:{},body:body?JSON.stringify(body):undefined});let j=await r.json().catch(()=>({error:"Invalid server response"}));if(!r.ok)throw Error(j.error||"Settings request failed");return j;}
+function toast(s){$("toast").textContent=s;$("toast").style.display="block";setTimeout(()=>$("toast").style.display="none",2600)}
+function prettyDate(d){return new Date(d+"T12:00:00").toLocaleDateString(undefined,{weekday:"long",day:"numeric",month:"long",year:"numeric"})}
+function page(p){document.querySelectorAll(".tab").forEach(b=>b.classList.toggle("active",b.dataset.page===p));document.querySelectorAll(".page").forEach(s=>s.classList.toggle("active",s.id==="page-"+p));if(p==="settings")showLockState()}
+document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>page(b.dataset.page));
+function isConfirmed(){return !!confirmed[date]}
+function draw(){
+ $("workDate").value=date;
+ $("dateStatus").textContent=isConfirmed()?"✓ Confirmed":"Not confirmed";
+ $("dateStatus").className="status "+(isConfirmed()?"good":"pending");
+ $("confirmDate").textContent=isConfirmed()?"Date confirmed ✓":"Confirm date";
+ $("confirmedDateLabel").textContent=isConfirmed()?prettyDate(date):"Not confirmed — select a date and confirm";
+ $("sheetTitle").textContent="ROOM WORK — "+prettyDate(date).toUpperCase();
+ let body=$("sheetBody");body.innerHTML="";
+ TASKS.forEach((task,i)=>{let tr=document.createElement("tr"),rn=document.createElement("td");rn.className="rownum";rn.textContent=i+1;tr.appendChild(rn);let name=document.createElement("td");name.className="task";name.textContent=task;tr.appendChild(name);
+ PEOPLE.forEach(person=>{let td=document.createElement("td");td.className="person";let marked=data[cellKey(date,task,person)]===cellDateLabel(date);let cell=document.createElement("button");cell.type="button";cell.className="date-cell"+(marked?" is-marked":"");cell.textContent=marked?cellDateLabel(date):"";cell.disabled=!isConfirmed();cell.title=isConfirmed()?(marked?"Click to clear this date":"Click to mark this person for "+prettyDate(date)):"Confirm the date first";cell.setAttribute("aria-label",task+" — "+person+ (marked?", marked "+prettyDate(date):", not marked"));cell.addEventListener("click",()=>toggleDateCell(task,person));td.appendChild(cell);tr.appendChild(td)});body.appendChild(tr)});
+ $("countText").textContent="Tap a cell to show the confirmed date · tap again to clear · "+TASKS.length+" tasks × "+PEOPLE.length+" people";
+ $("syncText").textContent=db?"Cloud sync enabled":"Changes saved on this device";
+}
+function changeDate(d,ask=true){date=d||iso(new Date());draw();if(ask&&!isConfirmed())openDateConfirm()}
+$("workDate").onchange=e=>changeDate(e.target.value);
+$("today").onclick=()=>changeDate(iso(new Date()));
+$("tomorrow").onclick=()=>{let d=new Date();d.setDate(d.getDate()+1);changeDate(iso(d))};
+$("confirmDate").onclick=()=>isConfirmed()?toast("This date is already confirmed."):openDateConfirm();
+function openDateConfirm(){pendingDate=date;$("confirmMessage").textContent="Confirm "+prettyDate(pendingDate)+"? You can enter work details for this date after confirmation.";$("confirmOverlay").style.display="flex"}
+$("yesDate").onclick=async()=>{confirmed[pendingDate]=true;localStorage.setItem("rw_dates",JSON.stringify(confirmed));$("confirmOverlay").style.display="none";draw();toast("Date confirmed: "+prettyDate(pendingDate));if(db)await saveDate(pendingDate)};
+$("noDate").onclick=()=>$("confirmOverlay").style.display="none";
+function cellDateLabel(d){let [y,m,day]=d.split("-");return `${day}-${m}`}
+async function toggleDateCell(t,p){if(!isConfirmed())return;let d=date,k=cellKey(d,t,p),v=data[k]===cellDateLabel(d)?"":cellDateLabel(d);data[k]=v;localStorage.setItem("rw_text_cells",JSON.stringify(data));draw();if(db)await saveTask(d,t,p,v)}
+function exportRows(){return [["WORK",...PEOPLE],[...[]]] .slice(0,1).concat(TASKS.map(t=>[t,...PEOPLE.map(p=>data[cellKey(date,t,p)]||"")]))}
+function exportExcel(){if(!isConfirmed()){toast("Confirm the date before exporting.");return}if(!window.XLSX){toast("Excel export library unavailable. Check internet and retry.");return}let ws=XLSX.utils.aoa_to_sheet([["ROOM WORK"],["Confirmed date",prettyDate(date)],[],["WORK",...PEOPLE],...TASKS.map(t=>[t,...PEOPLE.map(p=>data[cellKey(date,t,p)]||"")])]);ws["!cols"]=[{wch:30},...PEOPLE.map(()=>({wch:22}))];let wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,"Room Work");XLSX.writeFile(wb,`Room_Work_${date}.xlsx`)}
+function exportPdf(){if(!isConfirmed()){toast("Confirm the date before exporting.");return}if(!window.jspdf){toast("PDF export library unavailable. Check internet and retry.");return}let doc=new window.jspdf.jsPDF({orientation:"landscape",unit:"mm",format:"a4"});doc.setFontSize(16);doc.text("ROOM WORK",14,14);doc.setFontSize(10);doc.text("Confirmed date: "+prettyDate(date),14,21);doc.autoTable({startY:27,head:[["WORK",...PEOPLE]],body:TASKS.map(t=>[t,...PEOPLE.map(p=>data[cellKey(date,t,p)]||"")]),styles:{fontSize:9,cellPadding:3},headStyles:{fillColor:[33,115,70]},columnStyles:{0:{cellWidth:58}}});doc.save(`Room_Work_${date}.pdf`)}
+$("exportExcel").onclick=exportExcel;$("exportPdf").onclick=exportPdf;
+function showLockState(){$("lockedPanel").classList.toggle("hidden",settingsUnlocked);$("settingsPanel").classList.toggle("hidden",!settingsUnlocked);$("createPin").classList.toggle("hidden",ownerConfigured);if(settingsUnlocked){let c=cfg();$("projectName").value=c.name||"";$("projectUrl").value=c.url||"";$("apiKey").value=c.key||""}}
+$("createPin").onclick=()=>{$("pinOverlay").style.display="flex"};
+$("cancelPin").onclick=()=>$("pinOverlay").style.display="none";
+$("savePin").onclick=async()=>{let a=$("pin1").value,b=$("pin2").value;if(a.length<8||a!==b){toast("PINs must match and contain at least 8 characters.");return}try{await settingsApi({action:"claim",pin:a});ownerPinSession=a;ownerConfigured=true;settingsUnlocked=true;$("pinOverlay").style.display="none";$("pin1").value=$("pin2").value="";showLockState();toast("Owner PIN created. Settings are shared across devices.")}catch(e){toast(e.message)}};
+$("unlock").onclick=async()=>{let p=$("ownerPin").value;if(!p){toast("Enter the owner PIN.");return}try{await settingsApi({action:"unlock",pin:p});ownerPinSession=p;settingsUnlocked=true;$("ownerPin").value="";showLockState()}catch(e){toast(e.message)}};
+$("lock").onclick=()=>{settingsUnlocked=false;ownerPinSession="";showLockState()};
+$("toggleKey").onclick=()=>$("apiKey").type=$("apiKey").type==="password"?"text":"password";
+async function connect(){let c=cfg();if(!c.url||!c.key){db=null;$("cloudStatus").textContent="● Waiting for shared setup";draw();return}try{if(!window.supabase)throw Error("Supabase client library unavailable; check internet.");db=window.supabase.createClient(c.url,c.key);let a=await db.from("room_work_cells").select("*");if(a.error)throw a.error;let b=await db.from("room_work_dates").select("*");if(b.error)throw b.error;a.data.forEach(r=>data[cellKey(r.work_date,r.task_name,r.person_name)]=r.cell_value||"");b.data.forEach(r=>confirmed[r.work_date]=true);localStorage.setItem("rw_text_cells",JSON.stringify(data));localStorage.setItem("rw_dates",JSON.stringify(confirmed));$("cloudStatus").textContent="● Supabase connected";$("settingsStatus").textContent="Connected: "+(c.name||c.url);draw();if(channel)db.removeChannel(channel);channel=db.channel("room-work-excel-live-v5").on("postgres_changes",{event:"*",schema:"public",table:"room_work_cells"},p=>{let r=p.new;if(r?.work_date){data[cellKey(r.work_date,r.task_name,r.person_name)]=r.cell_value||"";localStorage.setItem("rw_text_cells",JSON.stringify(data));if(r.work_date===date)draw()}}).on("postgres_changes",{event:"*",schema:"public",table:"room_work_dates"},p=>{let r=p.new;if(r?.work_date){confirmed[r.work_date]=true;localStorage.setItem("rw_dates",JSON.stringify(confirmed));if(r.work_date===date)draw()}}).subscribe()}catch(e){db=null;$("cloudStatus").textContent="● Cloud connection error";$("settingsStatus").textContent="Connection failed: "+e.message;draw()}}
+async function saveTask(d,t,p,v){let r=await db.from("room_work_cells").upsert({work_date:d,task_name:t,person_name:p,cell_value:v,updated_at:new Date().toISOString()},{onConflict:"work_date,task_name,person_name"});if(r.error)toast("Sync error: "+r.error.message)}
+async function saveDate(d){let r=await db.from("room_work_dates").upsert({work_date:d,confirmed:true},{onConflict:"work_date"});if(r.error)toast("Date sync error: "+r.error.message)}
+async function saveSettings(){let c={name:$("projectName").value.trim(),url:$("projectUrl").value.trim().replace(/\/$/,""),key:$("apiKey").value.trim()};if(!c.url||!c.key){toast("Enter the Project URL and anon/public key.");return}try{new URL(c.url)}catch{toast("Project URL is not valid.");return}if(!ownerPinSession){toast("Unlock Settings with the owner PIN first.");return}try{$("settingsStatus").textContent="Saving shared settings…";let r=await settingsApi({action:"update",pin:ownerPinSession,config:c});globalCfg=r.config||c;await connect();toast("Shared settings updated for everyone.")}catch(e){$("settingsStatus").textContent="Could not save: "+e.message;toast(e.message)}}
+$("saveConnect").onclick=saveSettings;$("testConnect").onclick=saveSettings;
+async function init(){draw();try{let r=await settingsApi();ownerConfigured=!!r.ownerConfigured;globalCfg=r.config||{};showLockState();if(globalCfg.url&&globalCfg.key)await connect();else{$("cloudStatus").textContent="● Waiting for owner setup"}}catch(e){$("cloudStatus").textContent="● Netlify setup required";$("syncText").textContent="Deploy this site on Netlify with its server function enabled.";toast("Shared settings service unavailable: "+e.message)}}
+init();
+</script>
+</body></html>
