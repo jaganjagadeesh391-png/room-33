@@ -139,15 +139,6 @@ td.person{padding:0;text-align:center;vertical-align:middle}
  .date-cell{min-height:42px}
 }
 
-
-/* V8: spreadsheet labels can be edited in place */
-.editable-label{cursor:text;outline:none;position:relative}
-.editable-label:hover{box-shadow:inset 0 0 0 2px #a8cbb3}
-.editable-label:focus{background:#fff7dc!important;box-shadow:inset 0 0 0 2px #d6a943;color:#263b2d}
-.editable-label[contenteditable="true"]{user-select:text;-webkit-user-select:text}
-.editable-label:empty:before{content:"Enter label";color:#9aa69e;font-weight:400}
-.edit-hint{font-size:12px;color:#617467;margin:0 0 8px;padding:0 2px}
-
 </style></head>
 <body>
 <header class="top"><div class="brand">▦ Room Work</div><div class="cloud" id="cloudStatus">● Local mode</div></header>
@@ -164,14 +155,14 @@ td.person{padding:0;text-align:center;vertical-align:middle}
  </div>
  <div class="date-banner"><span>CONFIRMED DATE:</span><strong id="confirmedDateLabel">Not confirmed</strong></div>
  <div class="sheet-area">
-  <p class="sheet-title" id="sheetTitle">ROOM WORK — DAILY ALLOCATION</p><p class="edit-hint">Tip: tap WORK / TASK or a person name to edit it. Changes are shared with everyone.</p>
+  <p class="sheet-title" id="sheetTitle">ROOM WORK — DAILY ALLOCATION</p>
   <div class="sheet-frame">
    <table aria-label="Excel style household work sheet">
     <colgroup>
      <col class="col-rownum"><col class="col-task">
      <col class="col-person"><col class="col-person"><col class="col-person"><col class="col-person">
     </colgroup>
-    <thead><tr><th class="rownum"></th><th class="task editable-label" data-label-kind="task-header">WORK / TASK</th><th class="editable-label" data-person-index="0">DHRSHYA</th><th class="editable-label" data-person-index="1">SANDRA</th><th class="editable-label" data-person-index="2">SHAKINA</th><th class="editable-label" data-person-index="3">VIJAYSHREE</th></tr></thead>
+    <thead><tr><th class="rownum"></th><th class="task">WORK / TASK</th><th>DHRSHYA</th><th>SANDRA</th><th>SHAKINA</th><th>VIJAYSHREE</th></tr></thead>
     <tbody id="sheetBody"></tbody>
    </table>
   </div>
@@ -207,9 +198,8 @@ td.person{padding:0;text-align:center;vertical-align:middle}
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.4/dist/jspdf.plugin.autotable.min.js"></script>
 <script>
-let taskHeader="WORK / TASK";
-let PEOPLE=["DHRSHYA","SANDRA","SHAKINA","VIJAYSHREE"];
-let TASKS=["FLOOR & TOP","MOP","MAT WASHING","WASTE","CAN WATER & WASH","KITCHEN VESSEL KEEPING","BATHROOM","TOMATO & ONION MARKET"];
+const PEOPLE=["DHRSHYA","SANDRA","SHAKINA","VIJAYSHREE"];
+const TASKS=["FLOOR & TOP","MOP","MAT WASHING","WASTE","CAN WATER & WASH","KITCHEN VESSEL KEEPING","BATHROOM","TOMATO & ONION MARKET"];
 const $=id=>document.getElementById(id), iso=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
 let date=iso(new Date()), confirmed=JSON.parse(localStorage.getItem("rw_dates")||"{}"), data=JSON.parse(localStorage.getItem("rw_text_cells")||"{}"), db=null, channel=null, settingsUnlocked=false, pendingDate=null, globalCfg={}, ownerPinSession="", ownerConfigured=false;
 const cellKey=(d,t,p)=>`${d}|${t}|${p}`, cfg=()=>globalCfg;
@@ -226,57 +216,11 @@ function draw(){
  $("confirmDate").textContent=isConfirmed()?"Date confirmed ✓":"Confirm date";
  $("confirmedDateLabel").textContent=isConfirmed()?prettyDate(date):"Not confirmed — select a date and confirm";
  $("sheetTitle").textContent="ROOM WORK — "+prettyDate(date).toUpperCase();
- let taskHead=document.querySelector("[data-label-kind=\"task-header\"]");if(taskHead){taskHead.textContent=taskHeader;taskHead.contentEditable="true";taskHead.spellcheck=false;wireLabelEditor(taskHead,"taskHeader",0)}
- document.querySelectorAll("[data-person-index]").forEach(el=>{
-   let i=Number(el.dataset.personIndex); if(Number.isInteger(i)&&PEOPLE[i]!==undefined){el.textContent=PEOPLE[i];el.contentEditable="true";el.spellcheck=false;wireLabelEditor(el,"person",i)}
- });
  let body=$("sheetBody");body.innerHTML="";
- TASKS.forEach((task,i)=>{let tr=document.createElement("tr"),rn=document.createElement("td");rn.className="rownum";rn.textContent=i+1;tr.appendChild(rn);let name=document.createElement("td");name.className="task editable-label";name.textContent=task;name.contentEditable="true";name.spellcheck=false;name.dataset.taskIndex=i;wireLabelEditor(name,"task",i);tr.appendChild(name);
+ TASKS.forEach((task,i)=>{let tr=document.createElement("tr"),rn=document.createElement("td");rn.className="rownum";rn.textContent=i+1;tr.appendChild(rn);let name=document.createElement("td");name.className="task";name.textContent=task;tr.appendChild(name);
  PEOPLE.forEach(person=>{let td=document.createElement("td");td.className="person";let marked=data[cellKey(date,task,person)]===cellDateLabel(date);let cell=document.createElement("button");cell.type="button";cell.className="date-cell"+(marked?" is-marked":"");cell.textContent=marked?cellDateLabel(date):"";cell.disabled=!isConfirmed();cell.title=isConfirmed()?(marked?"Click to clear this date":"Click to mark this person for "+prettyDate(date)):"Confirm the date first";cell.setAttribute("aria-label",task+" — "+person+ (marked?", marked "+prettyDate(date):", not marked"));cell.addEventListener("click",()=>toggleDateCell(task,person));td.appendChild(cell);tr.appendChild(td)});body.appendChild(tr)});
  $("countText").textContent="Tap a cell to show the confirmed date · tap again to clear · "+TASKS.length+" tasks × "+PEOPLE.length+" people";
  $("syncText").textContent=db?"Cloud sync enabled":"Changes saved on this device";
-}
-function wireLabelEditor(el,kind,index){
- if(el.dataset.editorReady)return;el.dataset.editorReady="1";
- el.addEventListener("keydown",e=>{
-   if(e.key==="Enter"){e.preventDefault();el.blur()}
-   if(e.key==="Escape"){e.preventDefault();draw()}
- });
- el.addEventListener("blur",()=>commitLabel(kind,index,el.textContent.trim()));
-}
-async function commitLabel(kind,index,value){
- const list=kind==="task"?TASKS:kind==="person"?PEOPLE:null, old=kind==="taskHeader"?taskHeader:list[index];
- if(value===old)return;
- if(!value){toast("A name cannot be empty.");draw();return}
- if(list&&list.some((x,i)=>i!==index&&x.toLowerCase()===value.toLowerCase())){toast("That name already exists. Please use a unique name.");draw();return}
- try{
-   if(db){
-     let q=kind==="task"
-       ? db.from("room_work_cells").update({task_name:value}).eq("task_name",old)
-       : db.from("room_work_cells").update({person_name:value}).eq("person_name",old);
-     let result=await q;
-     if(result.error)throw result.error;
-   }
-   const nextTasks=kind==="task"?TASKS.map((x,i)=>i===index?value:x):TASKS.slice();
-   const nextPeople=kind==="person"?PEOPLE.map((x,i)=>i===index?value:x):PEOPLE.slice();
-   const nextData={};
-   for(const [k,v] of Object.entries(data)){
-     const parts=k.split("|");
-     if(parts.length===3){
-       if(kind==="task"&&parts[1]===old)parts[1]=value;
-       if(kind==="person"&&parts[2]===old)parts[2]=value;
-       nextData[parts.join("|")]=v;
-     }else nextData[k]=v;
-   }
-   data=nextData;localStorage.setItem("rw_text_cells",JSON.stringify(data));
-   if(kind==="task")TASKS.splice(0,TASKS.length,...nextTasks);else if(kind==="person")PEOPLE.splice(0,PEOPLE.length,...nextPeople);else taskHeader=value;
-   localStorage.setItem("rw_layout",JSON.stringify({people:PEOPLE,tasks:TASKS,taskHeader}));
-   if(db){
-     const saved=await db.from("room_work_layout").upsert({id:1,people:PEOPLE,tasks:TASKS,task_header:taskHeader,updated_at:new Date().toISOString()},{onConflict:"id"});
-     if(saved.error)throw saved.error;
-   }
-   draw();toast("Updated name saved for everyone.");
- }catch(e){toast("Could not save label: "+e.message);draw()}
 }
 function changeDate(d,ask=true){date=d||iso(new Date());draw();if(ask&&!isConfirmed())openDateConfirm()}
 $("workDate").onchange=e=>changeDate(e.target.value);
@@ -299,12 +243,12 @@ $("savePin").onclick=async()=>{let a=$("pin1").value,b=$("pin2").value;if(a.leng
 $("unlock").onclick=async()=>{let p=$("ownerPin").value;if(!p){toast("Enter the owner PIN.");return}try{await settingsApi({action:"unlock",pin:p});ownerPinSession=p;settingsUnlocked=true;$("ownerPin").value="";showLockState()}catch(e){toast(e.message)}};
 $("lock").onclick=()=>{settingsUnlocked=false;ownerPinSession="";showLockState()};
 $("toggleKey").onclick=()=>$("apiKey").type=$("apiKey").type==="password"?"text":"password";
-async function connect(){let c=cfg();if(!c.url||!c.key){db=null;$("cloudStatus").textContent="● Waiting for shared setup";draw();return}try{if(!window.supabase)throw Error("Supabase client library unavailable; check internet.");db=window.supabase.createClient(c.url,c.key);let layout=await db.from("room_work_layout").select("*").eq("id",1).maybeSingle();if(layout.error)throw layout.error;if(layout.data){if(layout.data.task_header)taskHeader=layout.data.task_header;if(Array.isArray(layout.data.people)&&layout.data.people.length===4)PEOPLE.splice(0,PEOPLE.length,...layout.data.people);if(Array.isArray(layout.data.tasks)&&layout.data.tasks.length>0)TASKS.splice(0,TASKS.length,...layout.data.tasks)}else{let initLayout=await db.from("room_work_layout").upsert({id:1,people:PEOPLE,tasks:TASKS,task_header:taskHeader},{onConflict:"id"});if(initLayout.error)throw initLayout.error}let a=await db.from("room_work_cells").select("*");if(a.error)throw a.error;let b=await db.from("room_work_dates").select("*");if(b.error)throw b.error;a.data.forEach(r=>data[cellKey(r.work_date,r.task_name,r.person_name)]=r.cell_value||"");b.data.forEach(r=>confirmed[r.work_date]=true);localStorage.setItem("rw_text_cells",JSON.stringify(data));localStorage.setItem("rw_dates",JSON.stringify(confirmed));$("cloudStatus").textContent="● Supabase connected";$("settingsStatus").textContent="Connected: "+(c.name||c.url);draw();if(channel)db.removeChannel(channel);channel=db.channel("room-work-excel-live-v5").on("postgres_changes",{event:"*",schema:"public",table:"room_work_cells"},p=>{let r=p.new;if(r?.work_date){data[cellKey(r.work_date,r.task_name,r.person_name)]=r.cell_value||"";localStorage.setItem("rw_text_cells",JSON.stringify(data));if(r.work_date===date)draw()}}).on("postgres_changes",{event:"*",schema:"public",table:"room_work_dates"},p=>{let r=p.new;if(r?.work_date){confirmed[r.work_date]=true;localStorage.setItem("rw_dates",JSON.stringify(confirmed));if(r.work_date===date)draw()}}).on("postgres_changes",{event:"*",schema:"public",table:"room_work_layout"},p=>{let r=p.new;if(r?.id===1){if(r.task_header)taskHeader=r.task_header;if(Array.isArray(r.people)&&r.people.length===4)PEOPLE.splice(0,PEOPLE.length,...r.people);if(Array.isArray(r.tasks)&&r.tasks.length>0)TASKS.splice(0,TASKS.length,...r.tasks);localStorage.setItem("rw_layout",JSON.stringify({people:PEOPLE,tasks:TASKS,taskHeader}));draw()}}).subscribe()}catch(e){db=null;$("cloudStatus").textContent="● Cloud connection error";$("settingsStatus").textContent="Connection failed: "+e.message;draw()}}
+async function connect(){let c=cfg();if(!c.url||!c.key){db=null;$("cloudStatus").textContent="● Waiting for shared setup";draw();return}try{if(!window.supabase)throw Error("Supabase client library unavailable; check internet.");db=window.supabase.createClient(c.url,c.key);let a=await db.from("room_work_cells").select("*");if(a.error)throw a.error;let b=await db.from("room_work_dates").select("*");if(b.error)throw b.error;a.data.forEach(r=>data[cellKey(r.work_date,r.task_name,r.person_name)]=r.cell_value||"");b.data.forEach(r=>confirmed[r.work_date]=true);localStorage.setItem("rw_text_cells",JSON.stringify(data));localStorage.setItem("rw_dates",JSON.stringify(confirmed));$("cloudStatus").textContent="● Supabase connected";$("settingsStatus").textContent="Connected: "+(c.name||c.url);draw();if(channel)db.removeChannel(channel);channel=db.channel("room-work-excel-live-v5").on("postgres_changes",{event:"*",schema:"public",table:"room_work_cells"},p=>{let r=p.new;if(r?.work_date){data[cellKey(r.work_date,r.task_name,r.person_name)]=r.cell_value||"";localStorage.setItem("rw_text_cells",JSON.stringify(data));if(r.work_date===date)draw()}}).on("postgres_changes",{event:"*",schema:"public",table:"room_work_dates"},p=>{let r=p.new;if(r?.work_date){confirmed[r.work_date]=true;localStorage.setItem("rw_dates",JSON.stringify(confirmed));if(r.work_date===date)draw()}}).subscribe()}catch(e){db=null;$("cloudStatus").textContent="● Cloud connection error";$("settingsStatus").textContent="Connection failed: "+e.message;draw()}}
 async function saveTask(d,t,p,v){let r=await db.from("room_work_cells").upsert({work_date:d,task_name:t,person_name:p,cell_value:v,updated_at:new Date().toISOString()},{onConflict:"work_date,task_name,person_name"});if(r.error)toast("Sync error: "+r.error.message)}
 async function saveDate(d){let r=await db.from("room_work_dates").upsert({work_date:d,confirmed:true},{onConflict:"work_date"});if(r.error)toast("Date sync error: "+r.error.message)}
 async function saveSettings(){let c={name:$("projectName").value.trim(),url:$("projectUrl").value.trim().replace(/\/$/,""),key:$("apiKey").value.trim()};if(!c.url||!c.key){toast("Enter the Project URL and anon/public key.");return}try{new URL(c.url)}catch{toast("Project URL is not valid.");return}if(!ownerPinSession){toast("Unlock Settings with the owner PIN first.");return}try{$("settingsStatus").textContent="Saving shared settings…";let r=await settingsApi({action:"update",pin:ownerPinSession,config:c});globalCfg=r.config||c;await connect();toast("Shared settings updated for everyone.")}catch(e){$("settingsStatus").textContent="Could not save: "+e.message;toast(e.message)}}
 $("saveConnect").onclick=saveSettings;$("testConnect").onclick=saveSettings;
-async function init(){let cachedLayout=JSON.parse(localStorage.getItem("rw_layout")||"null");if(cachedLayout){if(cachedLayout.taskHeader)taskHeader=cachedLayout.taskHeader;if(Array.isArray(cachedLayout.people)&&cachedLayout.people.length===4)PEOPLE.splice(0,PEOPLE.length,...cachedLayout.people);if(Array.isArray(cachedLayout.tasks)&&cachedLayout.tasks.length>0)TASKS.splice(0,TASKS.length,...cachedLayout.tasks)}draw();try{let r=await settingsApi();ownerConfigured=!!r.ownerConfigured;globalCfg=r.config||{};showLockState();if(globalCfg.url&&globalCfg.key)await connect();else{$("cloudStatus").textContent="● Waiting for owner setup"}}catch(e){$("cloudStatus").textContent="● Netlify setup required";$("syncText").textContent="Deploy this site on Netlify with its server function enabled.";toast("Shared settings service unavailable: "+e.message)}}
+async function init(){draw();try{let r=await settingsApi();ownerConfigured=!!r.ownerConfigured;globalCfg=r.config||{};showLockState();if(globalCfg.url&&globalCfg.key)await connect();else{$("cloudStatus").textContent="● Waiting for owner setup"}}catch(e){$("cloudStatus").textContent="● Netlify setup required";$("syncText").textContent="Deploy this site on Netlify with its server function enabled.";toast("Shared settings service unavailable: "+e.message)}}
 init();
 </script>
 </body></html>

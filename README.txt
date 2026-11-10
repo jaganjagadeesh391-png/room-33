@@ -1,9 +1,8 @@
-ROOM WORK — V8 EDITABLE TASK/PERSON LABELS + DATE-MARKING CELLS + NETLIFY SHARED SETTINGS + MOBILE + EXPORT
+ROOM WORK — V6 DATE-MARKING CELLS + NETLIFY SHARED SETTINGS + MOBILE + EXPORT
 
 WHAT CHANGED
 - Only two tabs: Excel and Settings.
-- Tap the WORK / TASK heading, a task name, or a person heading to edit its label directly in the spreadsheet. Press Enter or tap outside the cell to save. Labels sync across devices.
-- Date-marking cells remain non-typing cells: tap a task/person cell to display the confirmed date (DD-MM); tap it again to clear the mark.
+- No text-entry fields and no checkbox icons. Tap a task/person cell to display the confirmed date (DD-MM); tap it again to clear the mark.
 - Select Today, Tomorrow, or any date; confirm it. The confirmed date is displayed above the spreadsheet. Marked cells show that date as DD-MM.
 - Export Excel (.xlsx) and landscape PDF.
 - Mobile-friendly large touch targets, horizontal scrolling, and landscape layout.
@@ -22,7 +21,7 @@ This version uses a Netlify Function and Netlify Blobs. It cannot be deployed as
 
 SUPABASE
 1. Run supabase-schema.sql in Supabase SQL Editor.
-2. The app uses tables room_work_cells, room_work_dates, and room_work_layout. Run the updated SQL again; it adds the layout table without replacing existing data.
+2. The app uses tables room_work_cells and room_work_dates.
 3. Realtime must be enabled for these tables (the SQL attempts to add them to supabase_realtime).
 4. Only enter the Supabase anon/public or publishable key. Never use service_role or a secret key in the browser.
 5. This is a public no-login spreadsheet. Its SQL policies allow anyone who can reach the site to read and edit the room-work data. Do not put private or sensitive information in it.
@@ -37,7 +36,3 @@ EXPORT
 
 LOCAL PREVIEW
 The Netlify Function/Blobs shared settings feature requires Netlify hosting. A plain local static server will not provide shared settings.
-
-LABEL EDITING
-- Editing a task/person label updates matching existing cell records in Supabase so date marks remain associated with the renamed label.
-- The shared label list is stored in room_work_layout. Anyone with public spreadsheet access can edit labels, just as they can edit marks.
